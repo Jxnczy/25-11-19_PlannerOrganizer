@@ -1,9 +1,10 @@
-
 import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { Todo, Week, CategoryKey, DayTasks, DropTarget, DraggedTaskInfo, CATEGORIES } from '../models/todo.model';
 import { StorageService } from './storage.service';
 import { AudioService } from './audio.service';
 import { GeminiService, SchedulingPlanItem } from './gemini.service';
+
+export type SaveStatus = 'All changes saved' | 'Saving...';
 
 @Injectable({
   providedIn: 'root',
@@ -29,17 +30,18 @@ export class TaskService {
   editingTaskText = signal('');
   editingTaskDuration = signal<number | string>(30);
   isOrganizing = signal(false);
+  saveStatus = signal<SaveStatus>('All changes saved');
 
   // Date & Week Computations
   weekDateObjects = computed(() => this.calculateWeekDates(this.weekOffset()));
-  weekDates = computed(() => this.weekDateObjects().map(day => `${(day.getMonth() + 1).toString().padStart(2, '0')}/${day.getDate().toString().padStart(2, '0')}`));
+  weekDates = computed(() => this.weekDateObjects().map(day => `${day.getDate().toString().padStart(2, '0')}.${(day.getMonth() + 1).toString().padStart(2, '0')}.${day.getFullYear().toString().slice(-2)}`));
   
   weekDateRange = computed(() => {
     const dates = this.weekDateObjects();
     if (dates.length < 7) return '';
     const firstDay = dates[0];
     const lastDay = dates[6];
-    const format = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const format = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(-2)}`;
     return `${format(firstDay)} - ${format(lastDay)}`;
   });
 
@@ -136,15 +138,23 @@ export class TaskService {
       this.allWeeks.update(weeks => ({...weeks, [this.currentWeekKey()]: this.initializeWeek()}));
     }
 
-    // Auto-save effects
-    effect(() => {
-      const timeoutId = setTimeout(() => this.storageService.set('planner-allWeeks', this.allWeeks()), 500);
-      return () => clearTimeout(timeoutId);
-    });
-    effect(() => {
-      const timeoutId = setTimeout(() => this.storageService.set('planner-todoPool', this.todoPool()), 500);
-      return () => clearTimeout(timeoutId);
-    });
+    // Auto-save effect with status update
+    effect((onCleanup) => {
+      const weeks = this.allWeeks();
+      const pool = this.todoPool();
+
+      this.saveStatus.set('Saving...');
+
+      const timeoutId = setTimeout(() => {
+        this.storageService.set('planner-allWeeks', weeks);
+        this.storageService.set('planner-todoPool', pool);
+        this.saveStatus.set('All changes saved');
+      }, 1200);
+
+      onCleanup(() => {
+        clearTimeout(timeoutId);
+      });
+    }, { allowSignalWrites: true });
   }
 
   // --- Public Methods for Components ---
@@ -159,13 +169,13 @@ export class TaskService {
   }
 
   // Task Management
-  addTodo(text: string, category: 'asap' | 'soon' | 'pending' | 'leisure' | 'basics', duration: number | string): void {
+  addTodo(text: string, category: 'goal' | 'focus' | 'work' | 'leisure' | 'basics', duration: number | string): void {
     const newTodo: Todo = {
       id: Date.now(),
       text: text.trim(),
       completed: false,
-      urgent: category === 'asap' || category === 'pending',
-      important: category === 'asap' || category === 'soon',
+      urgent: category === 'goal' || category === 'work',
+      important: category === 'goal' || category === 'focus',
       duration: Number(duration) || 30,
       habit: category === 'basics',
     };
@@ -328,21 +338,25 @@ export class TaskService {
   onPoolDrop(): void {
     const data = this.draggedTaskInfo();
     if (!data || data.source !== 'week') return;
-    
-    const { todo, day, category, weekKey } = data;
-    // Instantiated habits cannot be returned to the pool.
-    if (todo.sourceId != null) return;
 
-    // 1. Atomically remove from the week
+    const { todo, day, category, weekKey } = data;
+
+    // 1. Always remove the task from the week grid.
     this.allWeeks.update(currentWeeks => {
-        const newWeeks = JSON.parse(JSON.stringify(currentWeeks));
+      const newWeeks = JSON.parse(JSON.stringify(currentWeeks));
+      if (newWeeks[weekKey]?.[day]?.[category]) {
         newWeeks[weekKey][day][category] = newWeeks[weekKey][day][category].filter((t: Todo) => t.id !== todo.id);
-        return newWeeks;
+      }
+      return newWeeks;
     });
 
-    // 2. Add to the pool
-    this.todoPool.update(pool => [...pool, todo]);
+    // 2. Only return regular tasks (non-instantiated habits) to the pool.
+    // Instantiated habits are simply removed (deleted) when dragged back.
+    if (todo.sourceId == null) {
+      this.todoPool.update(pool => [...pool, todo]);
+    }
   }
+
 
   // AI-powered Organization
   async organizeWeekWithAI(): Promise<void> {

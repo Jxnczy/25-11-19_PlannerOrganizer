@@ -1,5 +1,5 @@
 <!-- Left Sidebar: Brain Dump & Task Pool -->
-<aside class="w-[260px] h-full flex-shrink-0 flex flex-col glass-panel z-20 bg-planner-surface/50 border-r border-white/5">
+<aside style="width: clamp(18rem, 22vw, 24rem);" class="h-full flex-shrink-0 flex flex-col glass-panel z-20 bg-planner-surface/50 border-r border-white/5">
   <!-- Non-scrolling container -->
   <div class="flex-shrink-0">
     <!-- Header -->
@@ -27,7 +27,7 @@
         <!-- Settings -->
         <div class="relative">
           <button (click)="isDataConfigOpen.set(!isDataConfigOpen())" class="p-1.5 rounded-lg hover:bg-white/5 transition-colors text-planner-text-dim hover:text-white" aria-label="Settings">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
           </button>
           @if (isDataConfigOpen()) {
             <div class="absolute top-full right-0 mt-2 w-56 z-50 flex flex-col gap-1 p-1 bg-planner-card border border-white/10 rounded-xl shadow-2xl overflow-hidden animate-pop-in">
@@ -50,11 +50,11 @@
       <form (submit)="$event.preventDefault(); addTodo()" class="flex flex-col gap-3">
         <div class="relative group">
           <input type="text" name="newTodoText" [(ngModel)]="newTodoText" placeholder="Add task..." 
-                 class="w-full bg-planner-card/80 border border-white/5 rounded-xl px-3 py-2.5 text-[14px] focus:outline-none focus:bg-planner-card focus:ring-1 transition-all duration-300 shadow-sm placeholder-white/20"
+                 class="w-full bg-planner-card border border-white/5 rounded-lg px-3 py-2 text-[14px] focus:outline-none focus:bg-planner-card focus:ring-1 transition-all duration-300 shadow-sm placeholder-white/20"
                  [class]="{
-                    'focus:ring-cat-asap': newTaskCategory() === 'asap',
-                    'focus:ring-cat-soon': newTaskCategory() === 'soon',
-                    'focus:ring-cat-pending': newTaskCategory() === 'pending',
+                    'focus:ring-cat-asap': newTaskCategory() === 'goal',
+                    'focus:ring-cat-soon': newTaskCategory() === 'focus',
+                    'focus:ring-cat-pending': newTaskCategory() === 'work',
                     'focus:ring-cat-leisure': newTaskCategory() === 'leisure',
                     'focus:ring-cat-basics': newTaskCategory() === 'basics',
                     'focus:ring-planner-text-dim': !newTaskCategory()
@@ -65,16 +65,16 @@
           </div>
         </div>
         
-        <div class="flex justify-between gap-1 bg-planner-card/40 p-1 rounded-lg">
+        <div class="grid grid-cols-5 gap-1 bg-planner-card/40 p-1 rounded-lg">
            <!-- Category Pills -->
-           <button type="button" (click)="newTaskCategory.set('asap')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'asap' ? 'bg-cat-asap text-white shadow-lg shadow-cat-asap/20' : 'text-planner-text-dim hover:bg-white/5'">ASAP</button>
-           <button type="button" (click)="newTaskCategory.set('soon')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'soon' ? 'bg-cat-soon text-white shadow-lg shadow-cat-soon/20' : 'text-planner-text-dim hover:bg-white/5'">SOON</button>
-           <button type="button" (click)="newTaskCategory.set('pending')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'pending' ? 'bg-cat-pending text-black shadow-lg shadow-cat-pending/20' : 'text-planner-text-dim hover:bg-white/5'">LATER</button>
+           <button type="button" (click)="newTaskCategory.set('goal')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'goal' ? 'bg-cat-asap text-white shadow-lg shadow-cat-asap/20' : 'text-planner-text-dim hover:bg-white/5'">GOAL</button>
+           <button type="button" (click)="newTaskCategory.set('focus')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'focus' ? 'bg-cat-soon text-white shadow-lg shadow-cat-soon/20' : 'text-planner-text-dim hover:bg-white/5'">FOCUS</button>
+           <button type="button" (click)="newTaskCategory.set('work')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'work' ? 'bg-cat-pending text-black shadow-lg shadow-cat-pending/20' : 'text-planner-text-dim hover:bg-white/5'">WORK</button>
            <button type="button" (click)="newTaskCategory.set('leisure')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'leisure' ? 'bg-cat-leisure text-white shadow-lg shadow-cat-leisure/20' : 'text-planner-text-dim hover:bg-white/5'">LEISURE</button>
            <button type="button" (click)="newTaskCategory.set('basics')" class="category-pill flex-1 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-200" [class]="newTaskCategory() === 'basics' ? 'bg-cat-basics text-white shadow-lg shadow-cat-basics/20' : 'text-planner-text-dim hover:bg-white/5'">CHORES</button>
         </div>
         
-        <button type="submit" [disabled]="!newTaskCategory() || !newTodoText().trim()" class="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-1.5 px-3 rounded-lg transition-all duration-200 text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group border border-white/5">
+        <button type="submit" [disabled]="!newTaskCategory() || !newTodoText().trim()" class="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-2 px-3 rounded-lg transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group border border-white/5">
            <span class="group-hover:scale-110 transition-transform text-lg leading-none">+</span> Add Task
         </button>
       </form>
@@ -102,7 +102,14 @@
           }
         </button>
       </div>
-      <span class="text-[10px] bg-white/5 py-0.5 rounded-full text-planner-text-dim">{{ taskService.todoPool().length }}</span>
+      <div class="flex items-center gap-2 text-[11px] text-planner-text-dim font-medium">
+        <span>{{ taskService.saveStatus() }}</span>
+        <div class="w-2 h-2 rounded-full transition-colors"
+          [class.bg-emerald-500]="taskService.saveStatus() === 'All changes saved'"
+          [class.bg-amber-500]="taskService.saveStatus() === 'Saving...'"
+          [class.animate-pulse]="taskService.saveStatus() === 'Saving...'">
+        </div>
+      </div>
     </header>
   </div>
   
@@ -139,11 +146,11 @@
                      <button (click)="taskService.saveEdit()" class="text-emerald-400 hover:text-emerald-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></button>
                   </div>
                 } @else {
-                  <div class="flex flex-col gap-0.5 pl-2">
+                  <!-- Duration Badge -->
+                  <div class="absolute top-1.5 right-1.5 px-2 py-0.5 text-[10px] font-bold font-mono bg-planner-surface rounded-full text-planner-text-dim">{{ todo.duration }}m</div>
+                  
+                  <div class="pl-2 pr-12">
                     <span class="text-[14px] text-planner-text font-medium leading-snug truncate">{{ todo.text }}</span>
-                    <div class="flex items-center justify-between">
-                       <span class="text-[11px] font-mono text-planner-text-dim bg-planner-surface/50 px-1.5 py-px rounded border border-white/5">{{todo.duration}}m</span>
-                    </div>
                   </div>
                 }
               </div> 

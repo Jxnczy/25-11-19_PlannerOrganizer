@@ -19,7 +19,7 @@ export class SidebarComponent {
 
   // Form State
   newTodoText = signal('');
-  newTaskCategory = signal<'asap' | 'soon' | 'pending' | 'leisure' | 'basics'>('asap');
+  newTaskCategory = signal<'goal' | 'focus' | 'work' | 'leisure' | 'basics'>('goal');
   taskDuration = signal<number | string>(30);
   
   // UI State

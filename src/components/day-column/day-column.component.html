@@ -8,9 +8,8 @@
   (dragover)="$event.preventDefault()"
 >
     <!-- Day Header & Capacity -->
-    <div class="flex-shrink-0" style="height: 7.5rem;">
-      <header class="text-center py-3 flex-shrink-0">
-         <div class="flex justify-center items-center h-4 mb-1"></div>
+    <div class="flex-shrink-0 relative z-10" style="height: 7.5rem;">
+      <header class="text-center pt-4 pb-2 flex-shrink-0">
         <h3 class="text-lg tracking-wide" 
             [class.text-white]="isCurrentDay()" 
             [class.font-bold]="isCurrentDay()"
@@ -56,9 +55,9 @@
     <!-- Fixed Category Grid (Removed internal scrolling to allow parent grid to scroll) -->
     <div class="flex-grow min-h-0 pb-4 flex flex-col">
       
-      @for(cat of categories; track cat) {
+      @for(cat of categories; track cat; let i = $index) {
         <div 
-           class="flex flex-col gap-2 p-[1.375rem] rounded-xl transition-colors duration-200"
+           class="flex flex-col gap-2 px-2 py-[1.375rem] transition-colors duration-200"
            [class.bg-white/5]="isDropTarget(cat)"
            (dragover)="$event.preventDefault()" 
            (drop)="handleDrop($event, cat)"
@@ -70,19 +69,20 @@
                 [draggable]="taskService.editingTaskId() !== todo.id" 
                 (dragstart)="taskService.editingTaskId() !== todo.id && onWeekDragStart($event, todo, cat)" 
                 (dblclick)="taskService.editingTaskId() !== todo.id && taskService.startEdit(todo); $event.stopPropagation()"
-                class="relative p-3 flex flex-col justify-center bg-planner-surface rounded-md shadow-sm border border-white/5 hover:-translate-y-[2px] hover:shadow-md hover:border-white/20 transition-all duration-200 group flex-shrink-0 overflow-hidden min-h-[3.5rem]" 
+                class="relative p-3 flex items-center bg-planner-surface rounded-md shadow-sm border border-white/5 hover:-translate-y-[2px] hover:shadow-md hover:border-white/20 transition-all duration-200 group flex-shrink-0 overflow-hidden min-h-[3.5rem]" 
                 [class.animate-card-success-pop]="taskService.justCompletedTaskId() === todo.id"
                 [class.bg-emerald-900/20]="todo.completed"
+                [class.grayscale]="isPastDay() && !todo.completed"
+                [class.opacity-75]="isPastDay() && !todo.completed"
                 role="button">
                 
                  <!-- Left Category Strip -->
                  <div class="absolute left-0 top-0 bottom-0 w-1"
-                      [class.bg-cat-asap]="cat === 'goal' && isCurrentDay()"
-                      [class.bg-cat-soon]="cat === 'focus' && isCurrentDay()"
-                      [class.bg-cat-pending]="cat === 'work' && isCurrentDay()"
-                      [class.bg-cat-leisure]="cat === 'leisure' && isCurrentDay()"
-                      [class.bg-cat-basics]="cat === 'basics' && isCurrentDay()"
-                      [class.bg-white/20]="!isCurrentDay()"></div>
+                      [class.bg-cat-asap]="cat === 'goal'"
+                      [class.bg-cat-soon]="cat === 'focus'"
+                      [class.bg-cat-pending]="cat === 'work'"
+                      [class.bg-cat-leisure]="cat === 'leisure'"
+                      [class.bg-cat-basics]="cat === 'basics'"></div>
   
                  @if(taskService.editingTaskId() === todo.id) {
                     <div class="flex items-center gap-1 w-full z-10 pl-2">
@@ -90,27 +90,21 @@
                       <input type="number" [(ngModel)]="taskService.editingTaskDuration" (keydown.enter)="taskService.saveEdit()" (keydown.escape)="taskService.cancelEdit()" class="w-8 bg-transparent text-sm text-right focus:outline-none border-b border-white/20 font-mono text-planner-text-dim" placeholder="m">
                     </div>
                  } @else {
-                    <!-- Row 1: Title -->
-                    <div class="pl-2 mb-1">
+                    <!-- Duration Badge -->
+                    <div class="absolute top-1.5 right-1.5 px-2 py-0.5 text-[10px] font-bold font-mono bg-planner-card rounded-full text-planner-text-dim border border-white/5">{{ todo.duration }}m</div>
+
+                    <!-- Title -->
+                    <div class="pl-2 pr-16">
                         <span class="text-[14px] font-bold leading-snug block truncate transition-opacity duration-300"
                             [class.line-through]="todo.completed"
                             [class.text-white]="!todo.completed"
-                            [class.text-emerald-300]="todo.completed"
-                            [class.opacity-75]="!isCurrentDay() && !todo.completed">
+                            [class.text-emerald-300]="todo.completed">
                             {{ todo.text }}
                         </span>
                     </div>
                     
-                    <!-- Row 2: Duration & Checkbox -->
-                    <div class="pl-2 flex items-center justify-between">
-                        <span class="text-xs font-mono transition-opacity duration-300" 
-                              [class.text-white]="!todo.completed"
-                              [class.text-emerald-300]="todo.completed"
-                              [class.opacity-60]="isCurrentDay()"
-                              [class.opacity-40]="!isCurrentDay()">
-                              {{ todo.duration }}m
-                        </span>
-                        
+                    <!-- Checkbox -->
+                    <div class="absolute bottom-3 right-3">
                         <button (click)="taskService.toggleTodoCompletion(day(), cat, todo.id); $event.stopPropagation()" class="w-4 h-4 rounded-sm flex-shrink-0 flex items-center justify-center transition-all duration-300 border"
                            [class.border-white/20]="!todo.completed" 
                            [class.hover:border-emerald-400]="!todo.completed"
